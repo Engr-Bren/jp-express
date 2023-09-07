@@ -1,0 +1,39 @@
+// pages/profile.tsx
+
+import { useEffect } from 'react';
+import { useRouter } from 'next/router';
+import { useAuth } from '../util/auth';
+
+const Profile = () => {
+  const { user, logout } = useAuth();
+  const router = useRouter();
+
+  useEffect(() => {
+    // Check if the user is authenticated
+    if (!user) {
+      router.push('/login'); // Redirect to the login page if not authenticated
+    }
+  }, [user, router]);
+
+  // Handle user logout
+  const handleLogout = async () => {
+    await logout();
+    router.push('/login'); // Redirect to the login page after logout
+  };
+
+  return (
+    <div>
+      <h1>User Profile</h1>
+      {user ? (
+        <>
+          <p>Welcome, {user}!</p>
+          <button onClick={handleLogout}>Logout</button>
+        </>
+      ) : (
+        <p>Loading...</p>
+      )}
+    </div>
+  );
+};
+
+export default Profile;

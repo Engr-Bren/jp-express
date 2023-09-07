@@ -6,6 +6,8 @@ import * as yup from 'yup';
 import TextField from '@mui/material/TextField';
 import Button from '@mui/material/Button';
 import Grid from '@mui/material/Grid';
+import Container from '@mui/material/Container'; 
+import styles from '../src/app/page.module.css';
 
 // Define the Yup schema for validation
 const validationSchema = yup.object({
@@ -15,7 +17,7 @@ const validationSchema = yup.object({
   firstName: yup.string().required('First Name is required'),
   lastName: yup.string().required('Last Name is required'),
   middleName: yup.string(),
-  email: yup.string().email('Invalid email address').required('Email is required'),
+  emailAddress: yup.string().email('Invalid email address').required('Email is required'),
   mobileNumber: yup.string().matches(/^[0-9]{11}$/, 'Mobile Number must be an 11-digit number').required('Mobile Number is required'),
 });
 
@@ -28,7 +30,7 @@ const RegistrationForm: React.FC = () => {
       firstName: '',
       lastName: '',
       middleName: '',
-      email: '',
+      emailAddress: '',
       mobileNumber: '',
     },
     validationSchema,
@@ -39,9 +41,10 @@ const RegistrationForm: React.FC = () => {
   });
 
   return (
+    <Container maxWidth="xs">
     <form onSubmit={formik.handleSubmit}>
-    <Grid container spacing={2}>
-      <Grid item xs={12} sm={6}>
+    <Grid container spacing={2} >
+      <Grid item xs={12} >
         <TextField
           label="Username"
           name="username"
@@ -76,7 +79,7 @@ const RegistrationForm: React.FC = () => {
           fullWidth
         />
       </Grid>
-      <Grid item xs={12} sm={6}>
+      <Grid item xs={12}>
         <TextField
           label="First Name"
           name="firstName"
@@ -87,13 +90,56 @@ const RegistrationForm: React.FC = () => {
           fullWidth
         />
       </Grid>
-      {/* Add similar Grid items for the rest of the fields */}
+      <Grid item xs={12}>
+        <TextField
+          label="Middle Name"
+          name="middleName"
+          value={formik.values.middleName}
+          onChange={formik.handleChange}
+          error={formik.touched.middleName && Boolean(formik.errors.middleName)}
+          helperText={formik.touched.middleName && formik.errors.middleName}
+          fullWidth
+        />
+      </Grid>
+      <Grid item xs={12}>
+        <TextField
+          label="Last Name"
+          name="lastName"
+          value={formik.values.lastName}
+          onChange={formik.handleChange}
+          error={formik.touched.lastName && Boolean(formik.errors.lastName)}
+          helperText={formik.touched.lastName && formik.errors.lastName}
+          fullWidth
+        />
+      </Grid>
+      <Grid item xs={12} sm={6}>
+        <TextField
+          label="Email Address"
+          name="emailAddress"
+          value={formik.values.emailAddress}
+          onChange={formik.handleChange}
+          error={formik.touched.emailAddress && Boolean(formik.errors.emailAddress)}
+          helperText={formik.touched.emailAddress && formik.errors.emailAddress}
+          fullWidth
+        />
+      </Grid>
+      <Grid item xs={12} sm={6}>
+        <TextField
+          label="Phone Number"
+          name="mobileNumber"
+          value={formik.values.mobileNumber}
+          onChange={formik.handleChange}
+          error={formik.touched.mobileNumber && Boolean(formik.errors.mobileNumber)}
+          helperText={formik.touched.mobileNumber && formik.errors.mobileNumber}
+          fullWidth
+        />
+      </Grid>
     </Grid>
-    <Button type="submit" variant="contained" color="primary">
+    <Button className={styles.submit} type="submit" variant="contained" color="success" style={{ marginTop: '20px' }}>
       Submit
     </Button>
   </form>
-
+  </Container>
   );
 };
 
