@@ -8,7 +8,7 @@ import styles from './page.module.css';
 
 export default function Home() {
   return (
-  <div>
+  <div style={{ margin: '8px' }}>
     <Header />
     <main className={styles.main}>
     <Express />

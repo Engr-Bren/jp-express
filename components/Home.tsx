@@ -5,7 +5,7 @@ import styles from '../src/app/page.module.css';
 
 const Header: React.FC = () => {
   return (
-    <div>
+    <div className={styles.express}>
         <header className={styles.header}>
           <h1 className={styles.title}>Welcome to JP Express</h1>
         </header>

@@ -6,6 +6,7 @@ import { useFormik } from 'formik';
 import * as Yup from 'yup';
 import Button from '@mui/material/Button';
 import TextField from '@mui/material/TextField';
+import styles from '../src/app/page.module.css';
 
 interface LoginFormProps {
   onLogin: (formData: { email: string; password: string }) => void;
@@ -57,8 +58,8 @@ const LoginForm: React.FC<LoginFormProps> = ({ onLogin }) => {
   });
 
   return (
-    <div>
-      <h2>Login</h2>
+    <div className={styles.login}>
+      <h2 className={styles.h1}>Login</h2>
       <form onSubmit={formik.handleSubmit}>
         <TextField
           label="Email"
@@ -89,7 +90,7 @@ const LoginForm: React.FC<LoginFormProps> = ({ onLogin }) => {
           error={formik.touched.password && Boolean(formik.errors.password)}
           helperText={formik.touched.password && formik.errors.password}
         />
-        <Button type="submit" variant="contained" color="primary">
+        <Button type="submit" variant="contained" color="success" className={styles.submit} style={{ marginTop: '20px' }}>
           Log In
         </Button>
         {loginError && <p style={{ color: 'red' }}>{loginError}</p>}

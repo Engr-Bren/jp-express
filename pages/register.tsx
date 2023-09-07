@@ -3,7 +3,7 @@ import Header from '../components/Header';
 import styles from '../src/app/page.module.css';
 import RegistrationForm from '../components/RegistrationForm';
 
-const Home: React.FC = () => {
+const RegistrationPage = () => {
   return (
     <div>
     <Header />
@@ -15,4 +15,4 @@ const Home: React.FC = () => {
 );
 }
 
-export default Home;
+export default RegistrationPage;
