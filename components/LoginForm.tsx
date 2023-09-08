@@ -48,7 +48,9 @@ const LoginForm: React.FC<LoginFormProps> = ({ onLogin }) => {
           onLogin(matchedUser); // Pass the matched user data
 
           // Redirect to the profile page after successful login
-          router.push(`/profile/${matchedUser.userId}`); // Use matched user's userId for the URL
+          router.push(`/profile/${matchedUser.userId}`);
+          
+          // Use matched user's userId for the URL
         } else {
           setLoginError('Invalid credentials. Please try again.');
         }

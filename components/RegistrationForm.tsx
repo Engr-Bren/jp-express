@@ -8,6 +8,7 @@ import Container from '@mui/material/Container';
 import styles from '../src/app/page.module.css';
 import Cookies from 'js-cookie';
 import { v4 as uuidv4 } from 'uuid'; // Import uuid
+import { useRouter } from 'next/router';
 
 // Define the Yup schema for validation
 const validationSchema = yup.object({
@@ -35,7 +36,7 @@ interface UserAccount {
 }
 
 const RegistrationForm: React.FC = () => {
-  const [userAccounts, setUserAccounts] = useState<UserAccount[]>([]);
+  const [registrationSuccess, setRegistrationSuccess] = useState(false);
   const [formData, setFormData] = useState<UserAccount>({
     userId: '', // Generate a unique userId
     username: '',
@@ -48,6 +49,8 @@ const RegistrationForm: React.FC = () => {
     mobileNumber: '',
   });
 
+  const router = useRouter();
+
   const formik = useFormik({
     initialValues: formData,
     validationSchema,
@@ -55,10 +58,20 @@ const RegistrationForm: React.FC = () => {
       // Generate a unique userId using uuid
       const userId = generateUniqueUserId();
 
+      // Set the username based on the user input
+      const username = values.username;
+
+      // Retrieve existing user accounts data from cookies
+      const existingUserAccounts = Cookies.get('userAccounts');
+      let updatedUserAccounts: UserAccount[] = [];
+
+      if (existingUserAccounts) {
+        updatedUserAccounts = JSON.parse(existingUserAccounts);
+      }
+
       // Add the new user account to the array with the generated userId
-      const newUser: UserAccount = { ...values, userId };
-      const updatedUserAccounts = [...userAccounts, newUser];
-      setUserAccounts(updatedUserAccounts);
+      const newUser: UserAccount = { ...values, userId, username };
+      updatedUserAccounts.push(newUser);
 
       // Save the updated array to cookies
       Cookies.set('userAccounts', JSON.stringify(updatedUserAccounts), { expires: 7 });
@@ -68,18 +81,13 @@ const RegistrationForm: React.FC = () => {
 
       // Redirect to a success page or perform other actions
       console.log('User registered:', newUser);
-      // Redirect to the login page after registration
-      window.location.href = '/login';
+
+      setRegistrationSuccess(true);
+      setTimeout(() => {
+        router.push('/login'); // Replace '/login' with your actual login page URL
+      }, 1000);
     },
   });
-
-  // Use effect to populate the form with data from cookies when the component mounts
-  useEffect(() => {
-    const storedFormData = Cookies.get('registrationData');
-    if (storedFormData) {
-      setFormData(JSON.parse(storedFormData));
-    }
-  }, []);
 
   // Function to generate a unique userId using uuid
   const generateUniqueUserId = () => {
@@ -87,7 +95,12 @@ const RegistrationForm: React.FC = () => {
   };
 
   return (
-    <Container maxWidth="xs">
+    <Container maxWidth="xs" >
+            {registrationSuccess && (
+        <div style={{ marginBottom:'20px', color: '#005f1d', textAlign: 'center', fontFamily: '"Roboto","Helvetica","Arial",sans-serif'}} >
+          Registered Successfully!
+        </div>
+      )}
     <form onSubmit={formik.handleSubmit}>
     <Grid container spacing={2} >
       <Grid item xs={12} >
