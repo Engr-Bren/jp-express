@@ -87,3 +87,10 @@
 .nav-link-container:hover {
   background-color: #005f1d;
 }
+
+.description {
+  font-family: "Roboto","Helvetica","Arial",sans-serif;
+  font-style: normal;
+  color: #005f1d;
+  margin: 0 0 20px 0;
+}

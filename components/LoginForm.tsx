@@ -1,15 +1,21 @@
-// components/Auth/LoginForm.tsx
-
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
 import { useFormik } from 'formik';
 import * as Yup from 'yup';
 import Button from '@mui/material/Button';
 import TextField from '@mui/material/TextField';
 import styles from '../src/app/page.module.css';
+import Cookies from 'js-cookie';
+
+// Import or define the UserAccount type here
+interface UserAccount {
+  userId: string; // Add userId field to UserAccount type
+  username: string;
+  password: string;
+}
 
 interface LoginFormProps {
-  onLogin: (formData: { email: string; password: string }) => void;
+  onLogin: (formData: { username: string; password: string }) => void;
 }
 
 const LoginForm: React.FC<LoginFormProps> = ({ onLogin }) => {
@@ -18,62 +24,66 @@ const LoginForm: React.FC<LoginFormProps> = ({ onLogin }) => {
 
   const formik = useFormik({
     initialValues: {
-      email: '',
+      username: '',
       password: '',
     },
     validationSchema: Yup.object({
-      email: Yup.string().email('Invalid email address').required('Required'),
+      username: Yup.string().required('Required'),
       password: Yup.string().required('Required'),
     }),
     onSubmit: async (values) => {
-      // Simulate login logic (replace with actual login API call)
-      try {
-        // Replace this with your actual login API call
-        // const response = await fetch('/api/login', {
-        //   method: 'POST',
-        //   headers: {
-        //     'Content-Type': 'application/json',
-        //   },
-        //   body: JSON.stringify(values),
-        // });
+      // Check if registration was successful (cookie presence)
+      const registrationSuccess = Cookies.get('registrationSuccess');
 
-        // if (response.ok) {
-        //   // Redirect to the profile page or dashboard
-        //   router.push('/profile'); // Update the route as needed
-        // } else {
-        //   setLoginError('Invalid credentials. Please try again.');
-        // }
+      if (registrationSuccess === 'true') {
+        // Get the user accounts from cookies and parse them
+        const storedUserAccounts = Cookies.get('userAccounts');
+        const userAccounts = storedUserAccounts ? JSON.parse(storedUserAccounts) : [];
 
-        // This is a placeholder, replace with actual logic
-        if (values.email === 'user@example.com' && values.password === 'password') {
-          onLogin(values); // Notify the parent component of successful login
-          router.push('/profile'); // Redirect to the profile page
+        // Validate the login using the stored registration data
+        const matchedUser = userAccounts.find((user: UserAccount) => user.username === values.username && user.password === values.password);
+
+        if (matchedUser) {
+          // Notify the parent component of successful login
+          onLogin(matchedUser); // Pass the matched user data
+
+          // Redirect to the profile page after successful login
+          router.push(`/profile/${matchedUser.userId}`); // Use matched user's userId for the URL
         } else {
           setLoginError('Invalid credentials. Please try again.');
         }
-      } catch (error) {
-        console.error('Login error:', error);
+      } else {
+        setLoginError('Registration was not successful. Please register first.');
       }
     },
   });
+
+  useEffect(() => {
+    const storedFormData = Cookies.get('registrationData');
+    if (storedFormData) {
+      const parsedData = JSON.parse(storedFormData);
+      formik.setFieldValue('username', parsedData.username);
+      formik.setFieldValue('password', parsedData.password);
+    }
+  }, [formik]);
 
   return (
     <div className={styles.login}>
       <h2 className={styles.h1}>Login</h2>
       <form onSubmit={formik.handleSubmit}>
         <TextField
-          label="Email"
           variant="outlined"
           fullWidth
           margin="normal"
-          id="email"
-          name="email"
-          autoComplete="email"
-          value={formik.values.email}
+          id="username"
+          autoComplete="username"
+          label="Username"
+          name="username"
+          value={formik.values.username}
           onChange={formik.handleChange}
           onBlur={formik.handleBlur}
-          error={formik.touched.email && Boolean(formik.errors.email)}
-          helperText={formik.touched.email && formik.errors.email}
+          error={formik.touched.username && Boolean(formik.errors.username)}
+          helperText={formik.touched.username && formik.errors.username}
         />
         <TextField
           type="password"
@@ -90,10 +100,10 @@ const LoginForm: React.FC<LoginFormProps> = ({ onLogin }) => {
           error={formik.touched.password && Boolean(formik.errors.password)}
           helperText={formik.touched.password && formik.errors.password}
         />
+        {loginError && <div className={styles.error}>{loginError}</div>}
         <Button type="submit" variant="contained" color="success" className={styles.submit} style={{ marginTop: '20px' }}>
           Log In
         </Button>
-        {loginError && <p style={{ color: 'red' }}>{loginError}</p>}
       </form>
     </div>
   );

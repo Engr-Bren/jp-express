@@ -1,6 +1,4 @@
-// components/RegistrationForm.tsx
-
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { useFormik } from 'formik';
 import * as yup from 'yup';
 import TextField from '@mui/material/TextField';
@@ -8,12 +6,14 @@ import Button from '@mui/material/Button';
 import Grid from '@mui/material/Grid';
 import Container from '@mui/material/Container'; 
 import styles from '../src/app/page.module.css';
+import Cookies from 'js-cookie';
+import { v4 as uuidv4 } from 'uuid'; // Import uuid
 
 // Define the Yup schema for validation
 const validationSchema = yup.object({
   username: yup.string().min(4, 'Username must be at least 4 characters').max(10, 'Username cannot exceed 10 characters').required('Username is required'),
   password: yup.string().min(6, 'Password must be at least 6 characters').max(15, 'Password cannot exceed 15 characters').matches(/^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*[@#$%^&*!])[A-Za-z\d@#$%^&*!]{6,15}$/, 'Password must contain at least one uppercase, one lowercase, one special character, and one number').required('Password is required'),
-  confirmPassword: yup.string() .nullable().oneOf([yup.ref('password'), null], 'Passwords must match').required('Confirm Password is required'),
+  confirmPassword: yup.string().nullable().oneOf([yup.ref('password'), null], 'Passwords must match').required('Confirm Password is required'),
   firstName: yup.string().required('First Name is required'),
   lastName: yup.string().required('Last Name is required'),
   middleName: yup.string(),
@@ -21,24 +21,70 @@ const validationSchema = yup.object({
   mobileNumber: yup.string().matches(/^[0-9]{11}$/, 'Mobile Number must be an 11-digit number').required('Mobile Number is required'),
 });
 
+// Define the structure for user accounts
+interface UserAccount {
+  userId: string; // Add userId field
+  username: string;
+  password: string;
+  confirmPassword: string;
+  firstName: string;
+  lastName: string;
+  middleName: string;
+  emailAddress: string;
+  mobileNumber: string;
+}
+
 const RegistrationForm: React.FC = () => {
+  const [userAccounts, setUserAccounts] = useState<UserAccount[]>([]);
+  const [formData, setFormData] = useState<UserAccount>({
+    userId: '', // Generate a unique userId
+    username: '',
+    password: '',
+    confirmPassword: '',
+    firstName: '',
+    lastName: '',
+    middleName: '',
+    emailAddress: '',
+    mobileNumber: '',
+  });
+
   const formik = useFormik({
-    initialValues: {
-      username: '',
-      password: '',
-      confirmPassword: '',
-      firstName: '',
-      lastName: '',
-      middleName: '',
-      emailAddress: '',
-      mobileNumber: '',
-    },
+    initialValues: formData,
     validationSchema,
     onSubmit: (values) => {
-      // Handle form submission here
-      console.log(values);
+      // Generate a unique userId using uuid
+      const userId = generateUniqueUserId();
+
+      // Add the new user account to the array with the generated userId
+      const newUser: UserAccount = { ...values, userId };
+      const updatedUserAccounts = [...userAccounts, newUser];
+      setUserAccounts(updatedUserAccounts);
+
+      // Save the updated array to cookies
+      Cookies.set('userAccounts', JSON.stringify(updatedUserAccounts), { expires: 7 });
+
+      // Set a cookie to indicate successful registration
+      Cookies.set('registrationSuccess', 'true', { expires: 7 });
+
+      // Redirect to a success page or perform other actions
+      console.log('User registered:', newUser);
+      // Redirect to the login page after registration
+      window.location.href = '/login';
     },
   });
+
+  // Use effect to populate the form with data from cookies when the component mounts
+  useEffect(() => {
+    const storedFormData = Cookies.get('registrationData');
+    if (storedFormData) {
+      setFormData(JSON.parse(storedFormData));
+    }
+  }, []);
+
+  // Function to generate a unique userId using uuid
+  const generateUniqueUserId = () => {
+    return uuidv4();
+  };
 
   return (
     <Container maxWidth="xs">
