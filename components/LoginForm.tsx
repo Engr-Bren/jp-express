@@ -1,78 +1,57 @@
-import React, { useState, useEffect } from 'react';
+// components/LoginForm.tsx
+'use client'
+import React, { useState, useEffect } from 'react'; // Import React and useEffect here
 import { useRouter } from 'next/router';
-import { useFormik } from 'formik';
-import * as Yup from 'yup';
-import Button from '@mui/material/Button';
 import TextField from '@mui/material/TextField';
+import Button from '@mui/material/Button';
 import styles from '../src/app/page.module.css';
 import Cookies from 'js-cookie';
+import { useUserData } from '../hooks/useUserData';
 
-// Import or define the UserAccount type here
-interface UserAccount {
-  userId: string; // Add userId field to UserAccount type
-  username: string;
-  password: string;
-}
-
-interface LoginFormProps {
-  onLogin: (formData: { username: string; password: string }) => void;
-}
-
-const LoginForm: React.FC<LoginFormProps> = ({ onLogin }) => {
+const LoginForm = () => {
   const router = useRouter();
+  const [username, setUsername] = useState('');
+  const [password, setPassword] = useState('');
   const [loginError, setLoginError] = useState<string | null>(null);
+  const { user, mutateUserData } = useUserData(); // Move the useUserData hook outside of the handleLogin function
 
-  const formik = useFormik({
-    initialValues: {
-      username: '',
-      password: '',
-    },
-    validationSchema: Yup.object({
-      username: Yup.string().required('Required'),
-      password: Yup.string().required('Required'),
-    }),
-    onSubmit: async (values) => {
-      // Check if registration was successful (cookie presence)
-      const registrationSuccess = Cookies.get('registrationSuccess');
+  const handleLogin = () => {
+    // Get the user accounts from cookies and parse them
+    const storedUserAccounts = Cookies.get('userAccounts');
+    const userAccounts = storedUserAccounts ? JSON.parse(storedUserAccounts) : [];
 
-      if (registrationSuccess === 'true') {
-        // Get the user accounts from cookies and parse them
-        const storedUserAccounts = Cookies.get('userAccounts');
-        const userAccounts = storedUserAccounts ? JSON.parse(storedUserAccounts) : [];
+    // Validate the login using the stored registration data
+    const matchedUser = userAccounts.find(
+      (user: { username: string; password: string }) => user.username === username && user.password === password
+    );
 
-        // Validate the login using the stored registration data
-        const matchedUser = userAccounts.find((user: UserAccount) => user.username === values.username && user.password === values.password);
+    if (matchedUser) {
+      // Set authentication status in cookies
+      Cookies.set('authenticated', 'true');
+      Cookies.set("userId", matchedUser.userId)
 
-        if (matchedUser) {
-          // Notify the parent component of successful login
-          onLogin(matchedUser); // Pass the matched user data
+      
 
-          // Redirect to the profile page after successful login
-          router.push(`/profile/${matchedUser.userId}`);
-          
-          // Use matched user's userId for the URL
-        } else {
-          setLoginError('Invalid credentials. Please try again.');
-        }
-      } else {
-        setLoginError('Registration was not successful. Please register first.');
-      }
-    },
-  });
+      mutateUserData(matchedUser); // Pass the matched user data
+
+      // Redirect to the profile page
+      router.push(`/profile/${matchedUser.userId}`);
+    } else {
+      setLoginError('Invalid credentials. Please try again.');
+    }
+  };
 
   useEffect(() => {
-    const storedFormData = Cookies.get('registrationData');
-    if (storedFormData) {
-      const parsedData = JSON.parse(storedFormData);
-      formik.setFieldValue('username', parsedData.username);
-      formik.setFieldValue('password', parsedData.password);
+    // Check if the user is already logged in, then redirect to the profile page
+    if (user) {
+      router.push(`/profile/${user.userId}`);
     }
-  }, [formik]);
+  }, [user, router]);
 
   return (
     <div className={styles.login}>
       <h2 className={styles.h1}>Login</h2>
-      <form onSubmit={formik.handleSubmit}>
+      <div>
         <TextField
           variant="outlined"
           fullWidth
@@ -81,11 +60,8 @@ const LoginForm: React.FC<LoginFormProps> = ({ onLogin }) => {
           autoComplete="username"
           label="Username"
           name="username"
-          value={formik.values.username}
-          onChange={formik.handleChange}
-          onBlur={formik.handleBlur}
-          error={formik.touched.username && Boolean(formik.errors.username)}
-          helperText={formik.touched.username && formik.errors.username}
+          value={username}
+          onChange={(e) => setUsername(e.target.value)}
         />
         <TextField
           type="password"
@@ -96,17 +72,20 @@ const LoginForm: React.FC<LoginFormProps> = ({ onLogin }) => {
           id="password"
           name="password"
           autoComplete="current-password"
-          value={formik.values.password}
-          onChange={formik.handleChange}
-          onBlur={formik.handleBlur}
-          error={formik.touched.password && Boolean(formik.errors.password)}
-          helperText={formik.touched.password && formik.errors.password}
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
         />
         {loginError && <div className={styles.error}>{loginError}</div>}
-        <Button type="submit" variant="contained" color="success" className={styles.submit} style={{ marginTop: '20px' }}>
+        <Button
+          variant="contained"
+          color="success"
+          className={styles.submit}
+          style={{ marginTop: '20px' }}
+          onClick={handleLogin}
+        >
           Log In
         </Button>
-      </form>
+      </div>
     </div>
   );
 };

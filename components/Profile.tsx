@@ -5,6 +5,7 @@ import Cookies from 'js-cookie';
 import { Container, Paper, Typography, Grid, makeStyles, Avatar } from '@mui/material';
 import styles from '../src/app/page.module.css';
 
+
 // Define the User interface based on your user data structure
 interface User {
   userId: string;

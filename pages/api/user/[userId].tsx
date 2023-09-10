@@ -1,3 +1,4 @@
+// pages/api/user/[userId].tsx
 import Cookies from 'js-cookie';
 import { NextApiRequest, NextApiResponse } from 'next';
 
@@ -7,8 +8,8 @@ export default function handler(req: NextApiRequest, res: NextApiResponse) {
   try {
     console.log('Received userId:', userId);
 
-    if (!userId) {
-      return res.status(400).json({ message: 'userId is missing or invalid' });
+    if (!userId || isNaN(parseInt(userId, 10))) {
+      return res.status(400).json({ message: 'Invalid userId' });
     }
 
     // Retrieve user data from cookies based on userId

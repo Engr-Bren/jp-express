@@ -1,4 +1,4 @@
-// pages/index.js
+// src/app/page.tsx
 
 import React from 'react';
 import './page.module.css';
